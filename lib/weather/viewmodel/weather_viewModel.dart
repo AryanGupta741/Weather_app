@@ -16,8 +16,7 @@ class WeatherViewModel extends ChangeNotifier {
     try {
       weather = await _weatherService.getWeather(city);
     } catch (e) {
-      print('Error fetching weather: $e');
-      
+      print('Error fetching weather normal:  $e');
       weather = null;
     } finally {
       isLoading = false;

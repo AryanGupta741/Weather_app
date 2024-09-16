@@ -33,7 +33,7 @@ class WeatherViewModelUpcoming extends ChangeNotifier {
       _forecastUpcoming = dailyForecast.values.toList();
       notifyListeners();
     } catch (e) {
-      print('Error fetching weather: $e');
+      print('Error fetching weather upcoming: $e');
     }
   }
 }

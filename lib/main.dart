@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:testing/ragistration/data_push.dart';
+import 'package:testing/weather/model/lottie_animation_model.dart';
 import 'package:testing/weather/navigation_bar.dart';
 import 'package:testing/weather/viewmodel/weather_viewModel.dart';
 import 'package:testing/weather/view/weather_view.dart';
@@ -29,7 +30,8 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       
-      home: HomeScreen()
+      home: HomeScreen(),
+
     );
   }
 }

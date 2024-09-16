@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:testing/weather/model/lottie_animation_model.dart';
 import 'package:testing/weather/ui.dart';
 import 'package:testing/weather/viewmodel/weather_viewModel.dart';
 import 'package:testing/weather/viewmodel/weather_viewModel_upcoming.dart';
@@ -23,6 +24,14 @@ class _WeatherViewState extends State<WeatherView> {
     final weatherViewModel = Provider.of<WeatherViewModel>(context);
     final screenSize = MediaQuery.of(context).size;
     final viewModel = Provider.of<WeatherViewModelUpcoming>(context);
+    String _weatherDescription = "";
+    
+    @override
+    void initState() {
+      super.initState();
+      _weatherDescription = weatherViewModel.weather!.description;
+      print('${_weatherDescription.toString()}');
+    }
 
     return Scaffold(
       body: weatherViewModel.isLoading
@@ -54,101 +63,109 @@ class _WeatherViewState extends State<WeatherView> {
                     Padding(
                       padding: EdgeInsets.all(
                           screenSize.width * 0.04), // Responsive padding
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 20),
-
-                          // Search Bar
-                          SizedBox(
-                            width: screenSize.width * 0.92, // Responsive width
-                            child: TextField(
-                              controller: _searchController,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                hintText: 'Search city...',
-                                hintStyle: TextStyle(color: Colors.grey[400]),
-                                prefixIcon: const Icon(Icons.search,
-                                    color: Colors.white),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  borderSide: BorderSide.none,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 30),
+                            // Search Bar
+                            SizedBox(
+                              width:
+                                  screenSize.width * 0.92, // Responsive width
+                              child: TextField(
+                                controller: _searchController,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                  hintText: 'Search city...',
+                                  hintStyle: TextStyle(color: Colors.grey[400]),
+                                  prefixIcon: const Icon(Icons.search,
+                                      color: Colors.white),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(30.0),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.black.withOpacity(0.5),
+                                  contentPadding: EdgeInsets.symmetric(
+                                      vertical: screenSize.height * 0.02),
                                 ),
-                                filled: true,
-                                fillColor: Colors.black.withOpacity(0.5),
-                                contentPadding: EdgeInsets.symmetric(
-                                    vertical: screenSize.height * 0.02),
+                                onSubmitted: (value) {
+                                  if (value.isNotEmpty) {
+                                    weatherViewModel.fetchWeather(value);
+                                    viewModel.setCityName(value);
+                                  }
+                                },
                               ),
-                              onSubmitted: (value) {
-                                if (value.isNotEmpty) {
-                                  weatherViewModel.fetchWeather(value);
-                                   viewModel.setCityName(value);
-                                }
-                              },
                             ),
-                          ),
 
-                          const SizedBox(height: 20),
+                            // const SizedBox(height: 20),
 
-                          // Weather Info and Lottie Animation
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // Lottie Animation
-                              SizedBox(
-                                width:
-                                    screenSize.width * 0.4, // Responsive width
-                                height: screenSize.width *
-                                    0.4, // Maintain aspect ratio
-                                child: Lottie.asset(
-                                  'assets/lottie_animation/sun_animation.json',
-                                  fit: BoxFit.fill,
+                            // Weather Info and Lottie Animation
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                // Lottie Animation
+                                SizedBox(
+                                    width: screenSize.width *
+                                        0.4, // Responsive width
+                                    height: screenSize.width *
+                                        0.4, // Maintain aspect ratio
+                                    child: WeatherLottie(
+                                        description:
+                                            '${weatherViewModel.weather?.description}')
+
+                                    // Lottie.asset(
+                                    //   'assets/lottie_animation/sun_animation.json',
+                                    //   fit: BoxFit.fill,
+                                    // ),
+                                    ),
+
+                                // Weather Info Column
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Temperature: ${weatherViewModel.weather?.temperature} °C',
+                                        style: const TextStyle(
+                                            fontSize: 18, color: Colors.white),
+                                      ),
+                                      Text(
+                                        'Description: ${weatherViewModel.weather?.description}',
+                                        style: const TextStyle(
+                                            fontSize: 18, color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 30),
+                            WeatherInfoRow(),
+                            const SizedBox(height: 30),
+                            // Frosted Glass Tiles for upcoming weather forecast
+                            Center(
+                              child: SizedBox(
+                                height: 150,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: viewModel.forecastUpcoming.length,
+                                  itemBuilder: (context, index) {
+                                    final weather =
+                                        viewModel.forecastUpcoming[index];
+                                    return FrostedGlassTile(
+                                        time: '${weather.date}'.substring(8),
+                                        temperature: '${weather.temperature}°C',
+                                        chanceOfRain: '${weather.humidity}%',
+                                        networkImage:
+                                            'http://openweathermap.org/img/w/${weather.icon}.png');
+                                  },
                                 ),
                               ),
-
-                              // Weather Info Column
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Temperature: ${weatherViewModel.weather?.temperature} °C',
-                                      style: const TextStyle(
-                                          fontSize: 20, color: Colors.white),
-                                    ),
-                                    Text(
-                                      'Description: ${weatherViewModel.weather?.description}',
-                                      style: const TextStyle(
-                                          fontSize: 18, color: Colors.white),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 30),
-                          WeatherInfoRow(),
-                          const SizedBox(height: 30),
-                          // Frosted Glass Tiles for upcoming weather forecast
-                         Center(
-                    child: SizedBox(
-                      height: 150,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: viewModel.forecastUpcoming.length,
-                        itemBuilder: (context, index) {
-                          final weather = viewModel.forecastUpcoming[index];
-                          return FrostedGlassTile(
-                            time: '${weather.date}'.substring(8),
-                            temperature: '${weather.temperature}°C',
-                            chanceOfRain: '${weather.humidity}%',
-                            networkImage: 'http://openweathermap.org/img/w/${weather.icon}.png'
-                                                        );
-                        },
-                      ),
-                    ),
-                  ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -157,17 +174,14 @@ class _WeatherViewState extends State<WeatherView> {
                   child: ElevatedButton(
                     onPressed: () {
                       setState(() {
-                        viewModel.setCityName(
-                          _searchController.text.isNotEmpty
-                              ? _searchController.text
-                              : 'Dabra');
-                      weatherViewModel.fetchWeather(
-                          _searchController.text.isNotEmpty
-                              ? _searchController.text
-                              : 'Dabra');
+                        viewModel.setCityName(_searchController.text.isNotEmpty
+                            ? _searchController.text
+                            : 'Dabra');
+                        weatherViewModel.fetchWeather(
+                            _searchController.text.isNotEmpty
+                                ? _searchController.text
+                                : 'Dabra');
                       });
-                       
-                    
                     },
                     child: const Text('Get Weather'),
                   ),
@@ -176,7 +190,6 @@ class _WeatherViewState extends State<WeatherView> {
   }
 }
 
-
 class FrostedGlassTile extends StatelessWidget {
   final String time;
   final String temperature;
@@ -184,7 +197,10 @@ class FrostedGlassTile extends StatelessWidget {
   final String networkImage; // Added network image parameter
 
   FrostedGlassTile(
-      {required this.time, required this.temperature,required this.chanceOfRain, required this.networkImage});
+      {required this.time,
+      required this.temperature,
+      required this.chanceOfRain,
+      required this.networkImage});
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +241,7 @@ class FrostedGlassTile extends StatelessWidget {
                     ),
                   ),
                 const SizedBox(height: 5),
-                 // Display the network image
+                // Display the network image
                 Image.network(
                   networkImage, // Use the network image here
                   height: 30,
@@ -251,4 +267,3 @@ class FrostedGlassTile extends StatelessWidget {
     );
   }
 }
-
